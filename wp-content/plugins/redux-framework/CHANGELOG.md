@@ -1,5 +1,24 @@
 # Redux Framework Changelog
 
+## 3.3.8.4
+* Modified: Removed a cURL instance from the core and fixed the developer ad resizing.
+* Fixed: PHP 5.2 issues. *sigh*
+
+## 3.3.8.3
+* Added:   #1593 - Great pull request by @JonasDoebertin. Now you can enqueue dynamic output to the login screen or admin backend.
+
+## 3.3.8.2
+* Fixed:   Customizer wasn't saving at all! That's been like 4 months. No one's reported it. Hmm.
+* Fixed: #1702 - Customizer only fields were being erased on panel save.
+
+## 3.3.8.1
+* Fixed:   Various Theme-Check errors with languages.
+* Added: Theme-Check class to help devs know what is what.
+* Fixed: The way we include files from include_once to require_once everywhere.
+* Modified: Language files to reflect new strings.
+* Modified: Formatted a bunch of old class files.
+* Added: Notice on the updates for non-devs to use the new dev_mode disabler plugin and notify their developer.  ;)
+
 ## 3.3.8
 * Modified:   Updated potomo, thanks @shivapoudel.
 * Added: Grunt checktextdomain and made improvements. Thanks @shivapoudel.

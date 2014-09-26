@@ -1,5 +1,4 @@
 <?php
-
     /**
      * ReduxFramework Sample Config File
      * For full documentation, please visit: https://docs.reduxframework.com
@@ -1800,6 +1799,8 @@
 
         global $reduxConfig;
         $reduxConfig = new Redux_Framework_sample_config();
+    } else {
+        echo "The class named Redux_Framework_sample_config has already been called. <strong>Developers, you need to prefix this class with your company name or you'll run into problems!</strong>";
     }
 
     /**
