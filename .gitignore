@@ -8,3 +8,7 @@ wp-config.php
 /wp-content/uploads/2018/
 /wp-content/uploads/2019/
 /wp-content/uploads/2020/
+.htaccess
+.ftpquota
+.DS_Store
+error_log
