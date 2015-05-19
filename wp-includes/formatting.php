@@ -28,7 +28,7 @@
  * @return string The string replaced with html entities
  */
 function wptexturize($text, $reset = false) {
-	global $wp_cockneyreplace;
+	global $wp_cockneyreplace, $shortcode_tags;
 	static $static_characters, $static_replacements, $dynamic_characters, $dynamic_replacements,
 		$default_no_texturize_tags, $default_no_texturize_shortcodes, $run_texturize = true;
 
@@ -205,21 +205,34 @@ function wptexturize($text, $reset = false) {
 
 	// Look for shortcodes and HTML elements.
 
+	$tagnames = array_keys( $shortcode_tags );
+	$tagregexp = join( '|', array_map( 'preg_quote', $tagnames ) );
+	$tagregexp = "(?:$tagregexp)(?![\\w-])"; // Excerpt of get_shortcode_regex().
+
+	$comment_regex =
+		  '!'           // Start of comment, after the <.
+		. '(?:'         // Unroll the loop: Consume everything until --> is found.
+		.     '-(?!->)' // Dash not followed by end of comment.
+		.     '[^\-]*+' // Consume non-dashes.
+		. ')*+'         // Loop possessively.
+		. '-->';        // End of comment.
+
 	$regex =  '/('			// Capture the entire match.
 		.	'<'		// Find start of element.
 		.	'(?(?=!--)'	// Is this a comment?
-		.		'.+?--\s*>'	// Find end of comment
+		.		$comment_regex	// Find end of comment
 		.	'|'
 		.		'[^>]+>'	// Find end of element
 		.	')'
 		. '|'
 		.	'\['		// Find start of shortcode.
-		.	'\[?'		// Shortcodes may begin with [[
+		.	'[\/\[]?'	// Shortcodes may begin with [/ or [[
+		.	$tagregexp	// Only match registered shortcodes, because performance.
 		.	'(?:'
-		.		'[^\[\]<>]'	// Shortcodes do not contain other shortcodes.
+		.		'[^\[\]<>]+'	// Shortcodes do not contain other shortcodes. Quantifier critical.
 		.	'|'
-		.		'<[^>]+>' 	// HTML elements permitted. Prevents matching ] before >.
-		.	')++'
+		.		'<[^\[\]>]*>' 	// HTML elements permitted. Prevents matching ] before >.
+		.	')*+'		// Possessive critical.
 		.	'\]'		// Find end of shortcode.
 		.	'\]?'		// Shortcodes may end with ]]
 		. ')/s';
@@ -241,12 +254,12 @@ function wptexturize($text, $reset = false) {
 
 			continue;
 
-		} elseif ( '[' === $first && 1 === preg_match( '/^\[(?:[^\[\]<>]|<[^>]+>)++\]$/', $curl ) ) {
+		} elseif ( '[' === $first && 1 === preg_match( '/^\[\/?' . $tagregexp . '(?:[^\[\]<>]+|<[^\[\]>]*>)*+\]$/', $curl ) ) {
 			// This is a shortcode delimiter.
 
 			_wptexturize_pushpop_element( $curl, $no_texturize_shortcodes_stack, $no_texturize_shortcodes );
 
-		} elseif ( '[' === $first && 1 === preg_match( '/^\[\[?(?:[^\[\]<>]|<[^>]+>)++\]\]?$/', $curl ) ) {
+		} elseif ( '[' === $first && 1 === preg_match( '/^\[[\/\[]?' . $tagregexp . '(?:[^\[\]<>]+|<[^\[\]>]*>)*+\]\]?$/', $curl ) ) {
 			// This is an escaped shortcode delimiter.
 
 			// Do not texturize.
@@ -1292,21 +1305,23 @@ function sanitize_title_with_dashes( $title, $raw_title = '', $context = 'displa
 }
 
 /**
- * Ensures a string is a valid SQL order by clause.
+ * Ensures a string is a valid SQL 'order by' clause.
  *
- * Accepts one or more columns, with or without ASC/DESC, and also accepts
- * RAND().
+ * Accepts one or more columns, with or without a sort order (ASC / DESC).
+ * e.g. 'column_1', 'column_1, column_2', 'column_1 ASC, column_2 DESC' etc.
+ *
+ * Also accepts 'RAND()'.
  *
  * @since 2.5.1
  *
- * @param string $orderby Order by string to be checked.
- * @return string|bool Returns the order by clause if it is a match, false otherwise.
+ * @param string $orderby Order by clause to be validated.
+ * @return string|bool Returns $orderby if valid, false otherwise.
  */
-function sanitize_sql_orderby( $orderby ){
-	preg_match('/^\s*([a-z0-9_]+(\s+(ASC|DESC))?(\s*,\s*|\s*$))+|^\s*RAND\(\s*\)\s*$/i', $orderby, $obmatches);
-	if ( !$obmatches )
-		return false;
-	return $orderby;
+function sanitize_sql_orderby( $orderby ) {
+	if ( preg_match( '/^\s*(([a-z0-9_]+|`[a-z0-9_]+`)(\s+(ASC|DESC))?\s*(,\s*(?=[a-z0-9_`])|$))+$/i', $orderby ) || preg_match( '/^\s*RAND\(\s*\)\s*$/i', $orderby ) ) {
+		return $orderby;
+	}
+	return false;
 }
 
 /**
