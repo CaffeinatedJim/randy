@@ -1,0 +1,5 @@
+@media (min-width: 768px) and (max-width: 996px) {
+    .navbar-brand {
+        padding-left: 32px;
+    }
+}

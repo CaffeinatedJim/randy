@@ -1,0 +1,6 @@
+@media (min-width: 997px) and (max-width: 1199px) {
+    .navbar-form .form-control {
+        width: 200px;
+        color: #bbbbbb;
+    }
+}

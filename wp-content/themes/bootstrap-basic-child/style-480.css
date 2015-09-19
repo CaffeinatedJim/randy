@@ -1,0 +1,16 @@
+@media (max-width: 480px) {
+    .navbar-brand {
+        padding-top: 30px;
+    }
+    .navbar a.navbar-brand {
+        font-size: 14px;
+    }
+    .navbar-form .form-control {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .navbar.style1 .menu-item > a {
+        border-bottom: 5px solid #bbbbbb;
+    }
+}

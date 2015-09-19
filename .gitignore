@@ -2,5 +2,6 @@
 /nbproject/private/
 nbproject/
 wp-config.php
-wp-content/
+wp-content/uploads/
+wp-content/upgrade/
 dploy.yaml
